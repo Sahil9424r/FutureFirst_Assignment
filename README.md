@@ -184,10 +184,3 @@ This project demonstrates a complete machine learning workflow under constrained
 
 ---
 
-## 11. Repository Contents
-- Complete Jupyter Notebook (`.ipynb`)
-- Source code required to reproduce results
-- This README file
-
----
-
