@@ -165,7 +165,3 @@ This project demonstrates a complete machine learning workflow under constrained
 
 ---
 
-## 6. How to Run
-```bash
-pip install -r requirements.txt
-jupyter notebook
