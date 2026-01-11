@@ -1,18 +1,24 @@
-# Stock Price Prediction
+# Machine Learning Assignment – Stock Price Prediction
 
 ---
 
 ## 1. Overall Approach and Assumptions
 
 ### Overall Approach
-The objective of this assignment is to build a **Python-based machine learning model** that predicts **next-day stock price behavior** using a provided **Data dataset**. The project strictly follows the assignment constraints by modeling **only the relationship between the provided datasets**, without using any external or macroeconomic factors.
+This project is developed as part of a **Machine Learning assignment on Stock Price Prediction**.  
+The objective is to build a **Python-based machine learning model** that predicts **next-day stock price behavior** using only the information provided in two datasets:
 
-The overall workflow consists of the following stages:
+1. **Data Dataset** – Independent variable(s)  
+2. **StockPrice Dataset** – Dependent variable representing stock prices  
+
+The solution strictly follows the assignment constraints and **models only the relationship between the provided datasets**, without using any external or macroeconomic factors.
+
+The workflow is structured as:
 1. Data loading and inspection  
 2. Data preprocessing  
-3. Feature engineering based on day-over-day changes  
+3. Feature engineering  
 4. Target variable formulation  
-5. Model training using multiple algorithms  
+5. Model training and hyperparameter tuning  
 6. Model evaluation and analysis  
 
 Each stage is implemented explicitly and evaluated independently.
@@ -24,7 +30,7 @@ Each stage is implemented explicitly and evaluated independently.
    The next day’s stock price is primarily influenced by the **change in the Data dataset from the previous day**.
 
 2. **Scope Limitation**  
-   Although real-world stock prices are influenced by many external factors (news, sentiment, macroeconomic indicators), **all such factors are intentionally ignored** for this assignment.  
+   External influences such as market news, sentiment, volume, and macroeconomic indicators are intentionally ignored.  
    Only the relationship between the provided datasets is modeled.
 
 ---
@@ -33,135 +39,155 @@ Each stage is implemented explicitly and evaluated independently.
 
 ### Data Preprocessing
 
-The following preprocessing steps were performed to ensure clean and meaningful input for the models:
+The following preprocessing steps were applied:
 
 #### Date Handling
 - Converted `Date` columns to datetime format  
-- Sorted records chronologically to preserve time dependency  
-**Why:** Time order is critical for next-day prediction tasks.
+- Sorted records chronologically  
+**Reason:** Time order is critical for next-day prediction.
 
 #### Dataset Merging
-- Merged the Data dataset and StockPrice dataset using the `Date` column  
-**Why:** Ensures correct alignment between independent and dependent variables.
+- Merged Data and StockPrice datasets using the `Date` column  
+**Reason:** Ensures correct alignment of independent and dependent variables.
 
 #### Missing Value Handling
-- Missing values introduced by differencing, lagging, and rolling operations were removed  
-**Why:** Machine learning models cannot train on incomplete observations.
+- Rows with missing values created by differencing, lagging, and rolling operations were removed  
+**Reason:** ML models cannot train on incomplete observations.
 
 #### Outlier Handling
 - Outliers were handled using the **Interquartile Range (IQR) method**  
-**Why:** Financial data often contains extreme spikes. IQR is robust and does not assume normal distribution.
+**Reason:** Financial data contains extreme values; IQR is robust and distribution-agnostic.
 
 ---
 
 ### Feature Engineering
 
-To explicitly model how **previous-day changes influence next-day stock prices**, the following features were engineered:
+To explicitly model day-over-day influence, the following features were engineered:
 
 #### Day-over-Day Change
-- **Change_in_Data**
-**Why:** The assignment states that stock price movement depends on the *change* in data, not its absolute value.
+**Reason:** The assignment states that stock price behavior depends on *changes* in the data.
 
 #### Lag Features
-- **Change_Lag_1** – previous day’s change  
-- **Change_Lag_2** – change from two days prior  
-**Why:** Captures short-term memory and momentum effects.
+- `Change_Lag_1` – previous day’s change  
+- `Change_Lag_2` – change from two days ago  
+**Reason:** Captures short-term dependency and momentum.
 
 #### Rolling Statistics
-- **Change_Mean_3** – rolling mean over 3 days (short-term trend)  
-- **Change_Std_3** – rolling standard deviation over 3 days (recent volatility)  
-**Why:** Rolling statistics smooth noise and capture trend and volatility.
+- `Change_Mean_3` – rolling mean over 3 days (trend)  
+- `Change_Std_3` – rolling standard deviation over 3 days (volatility)  
+**Reason:** Helps smooth noise and capture short-term dynamics.
 
 ---
 
-## 3. Model Selection, Training Methodology, and Evaluation
+## 3. Target Variable Design
 
-### Target Variable Design
+Initial experiments attempted to predict the **absolute next-day stock price**, which resulted in weak performance due to high variance.
 
-Initial experiments attempted to predict the **absolute next-day stock price**, which resulted in poor performance due to high variance and weak correlation.
-
-To better align with the assignment assumption that **changes drive price movement**, the target variable was reformulated as:
+To better align with the assumption that **changes drive price movement**, the target variable was reformulated as:
 
 
-**Why this change was necessary:**
+**Benefits of this formulation:**
 - Aligns change-based features with a change-based target  
-- Reduces variance in the target variable  
+- Reduces target variance  
 - Improves numerical stability  
-- Still satisfies the requirement to analyze next-day stock price behavior  
+- Still satisfies the assignment objective  
 
 ---
 
-### Model Selection and Justification
+## 4. Model Selection and Hyperparameter Tuning
 
-#### Linear Regression
-- Baseline model  
-- Simple and interpretable  
-- Helps understand direct feature influence  
+### Models Used
+- **Linear Regression** – baseline model  
+- **Random Forest Regressor** – non-linear ensemble model  
+- **Gradient Boosting Regressor** – boosting-based ensemble model  
 
-#### Random Forest Regressor
-- Captures non-linear relationships  
-- Robust to noise and outliers  
-
-#### Gradient Boosting Regressor
-- Sequentially improves predictions  
-- Best-performing model among those tested  
+These models allow comparison between linear and non-linear approaches.
 
 ---
 
-### Training Methodology
-- Data split into **80% training** and **20% testing**  
-- `shuffle=False` used to preserve time order and prevent data leakage  
-- Feature scaling applied using `StandardScaler`  
-- A common evaluation function ensured consistent comparison across models  
+### Hyperparameter Tuning (RandomizedSearchCV)
+
+To improve model performance, **RandomizedSearchCV** was applied to ensemble models.
+
+#### Why RandomizedSearchCV?
+- Efficient compared to GridSearchCV  
+- Explores a wide hyperparameter space  
+- Reduces computational cost  
+
+Tuned parameters included:
+- Number of estimators  
+- Tree depth  
+- Minimum samples per split/leaf  
+- Learning rate (for boosting models)
+
+Despite tuning, improvements were limited by the **inherent lack of predictive signal** in the data.
 
 ---
 
-### Evaluation Metrics
-- **MAE (Mean Absolute Error)**  
-- **RMSE (Root Mean Squared Error)**  
-- **R² Score**  
+## 5. Training Methodology
+
+- Dataset split into **80% training** and **20% testing**
+- `shuffle=False` used to preserve time order and avoid data leakage
+- Feature scaling applied using `StandardScaler`
+- A common evaluation function used for all models
 
 ---
 
-## 4. Key Insights, Observations, and Conclusions
+## 6. Evaluation Metrics
 
-### Why R² is Negative
-Despite extensive preprocessing and feature engineering, the R² score remains negative. This is **not a modeling error** but a limitation of the dataset.
-
-**Reasons:**
-- Daily stock prices are highly volatile  
-- Limited predictive signal in the Data dataset  
-- External factors are intentionally excluded  
-- Feature engineering improves stability but cannot create new information  
-
-A negative R² indicates that previous-day changes alone are insufficient to explain next-day price variance.
+Models were evaluated using:
+- **MAE (Mean Absolute Error)**
+- **RMSE (Root Mean Squared Error)**
+- **R² Score**
 
 ---
 
-### Key Insights
-- Predicting **price change** is more effective than predicting absolute price  
-- Ensemble models reduce error compared to linear regression  
+## 7. Results and Analysis
+
+### Why R² Remains Negative (Even After Tuning)
+
+Despite extensive preprocessing, feature engineering, and hyperparameter tuning, the R² score remains negative.
+
+This occurs because:
+- Daily stock prices are highly volatile and resemble a random walk  
+- The provided Data dataset contains limited explanatory signal  
+- External influencing factors are intentionally excluded  
+- Hyperparameter tuning optimizes model behavior but **cannot create new information**
+
+A negative R² indicates that **previous-day changes alone are insufficient to explain next-day stock price variance**, which is a realistic outcome for financial time-series data.
+
+---
+
+## 8. Key Insights and Observations
+
 - Feature engineering improves stability but not variance explanation  
+- Ensemble models reduce error compared to linear regression  
+- Hyperparameter tuning yields marginal improvement  
+- Data limitations dominate model performance  
 
 ---
 
-### Limitations and Challenges
-- Limited feature set  
-- High noise and volatility  
-- Negative R² despite tuning  
-- No external data allowed  
+## 9. Limitations and Challenges
+
+- Restricted to a single explanatory dataset  
+- High noise and volatility in stock prices  
+- Negative R² despite advanced models and tuning  
+- No external data allowed by assignment  
+
+These limitations reflect real-world challenges in financial modeling.
 
 ---
 
-### Conclusion
-This project demonstrates a complete machine learning workflow under constrained assumptions. While day-over-day changes influence stock price movement to some extent, the relationship is weak and noisy. The results highlight both the usefulness and limitations of modeling stock prices using a single explanatory dataset.
+## 10. Conclusion
+
+This project demonstrates a complete machine learning workflow under constrained assumptions. While day-over-day changes in the Data dataset influence stock price movement to a limited extent, the relationship is weak and noisy. Even with hyperparameter tuning, model performance remains constrained by data limitations rather than algorithm choice. The results highlight both the usefulness and the inherent limitations of predicting stock prices using a single explanatory data source.
 
 ---
 
-## 5. Repository Contents
-- Complete Jupyter Notebook (`.ipynb`)  
-- Reproducible source code  
-- This README file  
+## 11. Repository Contents
+- Complete Jupyter Notebook (`.ipynb`)
+- Source code required to reproduce results
+- This README file
 
 ---
 
